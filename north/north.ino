@@ -60,56 +60,15 @@ char hours, minutes, seconds;
 const int GMT_8 = 28800;
 WiFiUDP ntpUDP;
 // By default 'pool.ntp.org' is used with 60 seconds update interval and
-// no offset
 //NTPClient timeClient(ntpUDP, "time.nist.gov", GMT_8);
 NTPClient timeClient(ntpUDP, "192.168.1.100", GMT_8);
-//NTPClient timeClient(ntpUDP, "192.168.1.150", GMT_8);
 
 RtcDS3231<TwoWire> Rtc(Wire);
 #define countof(a) (sizeof(a) / sizeof(a[0]))
 
 LiquidCrystal_I2C lcd(0x27,16,2);
 
-const char* serverIndex = 
-"<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>"
-"<h2>ESP8266 Login</h2>"
-"<form method='POST' action='#' enctype='multipart/form-data' id='upload_form'>"
-  "<input type='file' name='update'>"
-  "<input type='submit' value='Update'>"
-"</form>"
-"<div id='prg'>progress: 0%</div>"
-"<script>"
-  "$('form').submit(function(e){"
-
-    "e.preventDefault();"
-    "var form = $('#upload_form')[0];"
-    "var data = new FormData(form);"
-
-      "$.ajax({"
-        "url: '/update',"
-        "type: 'POST',"
-        "data: data,"
-        "contentType: false,"
-        "processData:false,"
-        "xhr: function() {"
-          "var xhr = new window.XMLHttpRequest();"
-          "xhr.upload.addEventListener('progress', function(evt) {"
-            "if (evt.lengthComputable) {"
-              "var per = evt.loaded / evt.total;"
-              "$('#prg').html('progress: ' + Math.round(per*100) + '%');"
-            "}"
-          "}, false);"
-          "return xhr;"
-        "},"
-        "success:function(d, s){"
-          "console.log('success!')"
-        "},"
-        "error: function (a, b, c) {"
-        "}"
-      "});"
-    "}"
-  "});"
-"</script>";
+const char* serverIndex = "";
 
 void initLCD() {
 	lcd.init();// initialize the lcd

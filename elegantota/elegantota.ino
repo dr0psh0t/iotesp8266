@@ -140,7 +140,7 @@ void setup(void) {
   server.on("/", []() {
     server.sendHeader("Connection", "close");
     server.send(200, "text/html", serverIndex);
-  });  
+  });
 
   server.begin();
   
