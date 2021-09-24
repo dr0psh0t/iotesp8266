@@ -20,16 +20,16 @@
 int hostId = 192;
 int mId = 10007;
 const char* ntpIp = "192.168.1.100";
-String api = "http://192.168.1.30:8080/mcsa/IoTCheckWorkQueue";
-//String api = "http://192.168.1.150:8080/joborder/IoTCheckWorkQueue";
-//const char* ssid = "wmdcDev";
-//const char* password = "(===|===Dev===|===)";
-String ssid = "Wifi_Er";//const char* ssid = "Wifi_Er";
-String password = "wmdcwifier";//const char* password = "wmdcwifier";
-//const char* ssid = "Wifi_Mf";
-//const char* password = "wmdcwifimf";
-//const char* ssid = "wifi_mf2";
-//const char* password = "wmdc_1959";
+//String api = "http://192.168.1.30:8080/mcsa/IoTCheckWorkQueue";
+String api = "http://192.168.1.150:8080/joborder/IoTCheckWorkQueue";
+//String ssid = "wmdcDev";
+//String password = "(===|===Dev===|===)";
+String ssid = "Wifi_Er";
+String password = "wmdcwifier";
+//String ssid = "Wifi_Mf";
+//String password = "wmdcwifimf";
+//String ssid = "wifi_mf2";
+//String password = "wmdc_1959";
 
 /* central 
 int hostId = 43;
