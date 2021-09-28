@@ -15,6 +15,7 @@
 #include <LiquidCrystal_I2C.h>
 #include <ESP8266HTTPClient.h>
 #include "ArduinoJson.h"
+#include <FS.h>
 
 /*  north */
 int hostId = 192;
