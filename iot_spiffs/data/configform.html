@@ -24,26 +24,135 @@
 </script>
 Configure Settings
 <br><br>
-<form method="POST" action="/submitconfig">
-	WiFi: <br>
-	<input type="text" name="wifi" placeholder="WiFi name">
-	<br>
-	Password: <br>
-	<input type="text" name="password" placeholder="WiFi password">
-	<br>
-	Subnet: <br>
-	<input type="text" name="subnet" placeholder="Subnet Id">
-	<br>
-	Host: <br>
-	<input type="text" name="host" placeholder="Host Id">
-	<br>
-	Gateway DNS host: <br>
-	<input type="text" name="gatewaydnshost" placeholder="Host of gateway and dns">
-	<br>
-	Machine Id: <br>
-	<input type="text" name="mId" placeholder="MCD Id">
-	<br><br>
-	<input type="submit" value="Submit">
-</form>
+<!--<form method="POST" action="/submitconfig">-->
+WiFi: <br>
+<input type="text" id="wifi" name="wifi" placeholder="WiFi name">
+<br>
+Password: <br>
+<input type="text" id="password" name="password" placeholder="WiFi password">
+<br>
+Subnet: <br>
+<input type="number" id="subnet" name="subnet" placeholder="Subnet Id" min="1" max="255">
+<br>
+Host: <br>
+<input type="number" id="host" name="host" placeholder="Host Id" min="1" max="255">
+<br>
+Gateway DNS host: <br>
+<input type="number" id="gatewaydnshost" name="gatewaydnshost" placeholder="Host of gateway and dns" min="1" max="255">
+<br>
+Machine Id: <br>
+<input type="text" id="mId" name="mId" placeholder="MCD Id">
+<br><br>
+<button onclick="submitConfig()">Submit</button>
+<script>
+	function submitConfig() {
+		var wifi = document.getElementById("wifi").value;
+		var pass = document.getElementById("password").value;
+		var subnet = document.getElementById("subnet").value;
+		var host = document.getElementById("host").value;
+		var gatewaydnshost = document.getElementById("gatewaydnshost").value;
+		var mid = document.getElementById("mId").value;
+		
+		if (wifi === null || wifi === "") {
+			alert("Please enter wifi");
+			return;
+		}
+		
+		if (pass === null || pass === "") {
+			alert("Please enter password");
+			return;
+		}
+		
+		if (subnet === null || subnet === "") {
+			alert("Please enter subnet");
+			return;
+		} else {
+			try {
+				var subnetnum = parseInt(subnet);
+				if (subnetnum < 1 || subnetnum > 255)  {
+					alert("Subnet must be between 1 - 255");
+					return;
+				}
+			} catch (err) {
+				alert("Invalid subnet");
+				return;
+			}
+		}
+		
+		if (host === null || host === "") {
+			alert("Please enter host");
+			return;
+		} else {
+			try {
+				var hostnum = parseInt(host);
+				if (hostnum < 1 || hostnum > 255)  {
+					alert("host must be between 1 - 255");
+					return;
+				}
+			} catch (err) {
+				alert("Invalid host");
+				return;
+			}
+		}
+		
+		if (gatewaydnshost === null || gatewaydnshost === "") {
+			alert("Please enter gatewaydnshost");
+			return;
+		} else {
+			try {
+				var gatewaydnshostnum = parseInt(gatewaydnshost);
+				if (gatewaydnshostnum < 1 || gatewaydnshostnum > 255)  {
+					alert("gatewaydnshostnum must be between 1 - 255");
+					return;
+				}
+			} catch (err) {
+				alert("Invalid gatewaydnshost");
+				return;
+			}
+		}
+		
+		if (mid === null || mid === "") {
+			alert("Please enter mid");
+			return;
+		}
+		
+		console.log(wifi);
+		console.log(pass);
+		console.log(subnet);
+		console.log(host);
+		console.log(gatewaydnshost);
+		console.log(mid);
+		
+		var formData = new FormData();
+		formData.append("wifi", wifi);
+		formData.append("password", pass);
+		formData.append("subnet", subnet);
+		formData.append("host", host);
+		formData.append("gatewaydnshost", gatewaydnshost);
+		formData.append("mId", mid);
+		
+		var xhr = new XMLHttpRequest();
+		xhr.onreadystatechange = function() {
+			if (this.readyState === 4 && this.status === 200) {
+				alert("submit successful");
+			}
+		};
+
+		xhr.onloadend = function() {
+			if (xhr.status === 200) {
+			} else {
+				console.log('error '+this.status);
+			}
+		};
+
+		xhr.onerror = function(error) {
+			console.log('Network Error');
+			console.log(error);
+		};
+
+		xhr.open('POST', 'submitconfig', true);
+		xhr.send(formData);
+	}
+</script>
 </body>
 </html>

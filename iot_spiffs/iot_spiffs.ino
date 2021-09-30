@@ -21,10 +21,10 @@
 
 /*  north */
 int hostId = 198;
-int mId = 10007;
+int mId = 100071;
 const char* ntpIp = "192.168.1.100";
-String api = "http://192.168.1.30:8080/mcsa/IoTCheckWorkQueue";
-//String api = "http://192.168.1.150:8080/joborder/IoTCheckWorkQueue";
+//String api = "http://192.168.1.30:8080/mcsa/IoTCheckWorkQueue";
+String api = "http://192.168.1.150:8080/joborder/IoTCheckWorkQueue";
 //String ssid = "wmdcDev";
 //String password = "(===|===Dev===|===)";
 String ssid = "Wifi_Er";
@@ -190,9 +190,19 @@ void setup() {
   httpServer.on("/submitconfig", HTTP_POST, [](){
     String argwifi = httpServer.arg("wifi");
     String argpass = httpServer.arg("password");
-
+    String argsubnet = httpServer.arg("subnet");
+    String arghost = httpServer.arg("host");
+    String arggatewaydnshost = httpServer.arg("gatewaydnshost");
+    String argmid = httpServer.arg("mId");
+    
     Serial.println(argwifi);
     Serial.println(argpass);
+    Serial.println(argsubnet);
+    Serial.println(arghost);
+    Serial.println(arggatewaydnshost);
+    Serial.println(argmid);
+
+    httpServer.send(200, "text/html", "Submit Successful");
   });
 
   httpServer.on("/errorpage", HTTP_GET, [](){
