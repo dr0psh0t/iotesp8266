@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width,initial-scale=1'/>
+    <title>Configuration</title>
+</head>
+<body>
+<script>
+	let user = prompt("Enter username:", "");
+	let pass;
+	
+	if (user === null || user === "") {
+		location.assign("/errorpage");
+	} else {
+		pass = prompt("Enter password:", "");
+		
+		if (pass === null || pass === "") {
+			location.assign("/errorpage");
+		} else {
+			//	authenticate here
+		}
+	}
+</script>
+Configure Settings
+<br><br>
+<form method="POST" action="/submitconfig">
+	WiFi: <br>
+	<input type="text" name="wifi" placeholder="WiFi name">
+	<br>
+	Password: <br>
+	<input type="text" name="password" placeholder="WiFi password">
+	<br>
+	Subnet: <br>
+	<input type="text" name="subnet" placeholder="Subnet Id">
+	<br>
+	Host: <br>
+	<input type="text" name="host" placeholder="Host Id">
+	<br>
+	Gateway DNS host: <br>
+	<input type="text" name="gatewaydnshost" placeholder="Host of gateway and dns">
+	<br>
+	Machine Id: <br>
+	<input type="text" name="mId" placeholder="MCD Id">
+	<br><br>
+	<input type="submit" value="Submit">
+</form>
+</body>
+</html>

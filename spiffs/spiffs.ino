@@ -34,8 +34,11 @@ void setup() {
     Serial.println("SPIFFS Mount successful");
   }
 
+  //  if the client requests any URI
   server.onNotFound([](){
+    //  send it if it exists
     if (!handleFileRead(server.uri())) {
+      // otherwise, respond with a 404 (Not Found) error
       server.send(404, "text/plain", "404: Not Found");
     }
   });
@@ -45,20 +48,28 @@ void setup() {
 }
 
 void loop() {
+  //  response to web clients
   server.handleClient();
 }
 
-bool handleFileRead(String path) {
+bool handleFileRead(String path) {  //  send the right file to the client (if it exists)
   Serial.println("handleFileRead: "+path);
 
+  //  if a folder is requested, send the index file
   if (path.endsWith("/")) {
     path += "index.html";
   }
 
+  //  get the MIME type
   String contentType = getContentType(path);
 
+  //  if the file exists
   if (SPIFFS.exists(path)) {
+
+    //  open it
     File file = SPIFFS.open(path, "r");
+
+    //  and send it to the client
     size_t sent = server.streamFile(file, contentType);
 
     if (path == "/LEDOn.html") {
@@ -67,7 +78,10 @@ bool handleFileRead(String path) {
       digitalWrite(2, HIGH);  
     }
 
+    //  then close the file again
     file.close();
+
+    //  if the file doesn't exist, return false
     return true;
   }
 

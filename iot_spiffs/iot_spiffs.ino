@@ -6,11 +6,13 @@
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
 #include <Wire.h>
+
 #include <RtcUtility.h>
 #include <RtcDS3231.h>
 #include <RtcDateTime.h>
 #include <TimeLib.h>
 #include <Time.h>
+
 #include <NTPClient.h>
 #include <LiquidCrystal_I2C.h>
 #include <ESP8266HTTPClient.h>
@@ -18,7 +20,7 @@
 #include <FS.h>
 
 /*  north */
-int hostId = 199;
+int hostId = 198;
 int mId = 10007;
 const char* ntpIp = "192.168.1.100";
 String api = "http://192.168.1.30:8080/mcsa/IoTCheckWorkQueue";
@@ -76,8 +78,16 @@ long val1;
 long val2;
 long val3;
 const int GMT_8 = 28800;
-const char* reason;
 String response;
+String configcontent;
+String errorcontent;
+
+const char* ipConf = "";
+int midConf;
+const char* wifiConf = "";
+const char* passConf = "";
+int subnetConf;
+int hostConf;
 
 ESP8266WebServer httpServer(80);
 ESP8266HTTPUpdateServer httpUpdater;
@@ -164,21 +174,103 @@ void setup() {
   MDNS.begin(host);
 
   httpUpdater.setup(&httpServer);
-  
-  /*httpServer.on("/", HTTP_GET, [](){
-    httpServer.sendHeader("Connection", "close");
-    httpServer.send(200, "text/html", serverIndex);
-  });*/
 
   httpServer.onNotFound([](){
     if (!handleFileRead(httpServer.uri())) {
       httpServer.send(404, "text/plain", "404: Not Found");
     }
   });
+
+  httpServer.on("/configure", HTTP_GET, [](){
+    httpServer.sendHeader("Connection", "close");
+    httpServer.send(200, "text/html", readConfigForm());
+    configcontent = "";
+  });
+
+  httpServer.on("/submitconfig", HTTP_POST, [](){
+    String argwifi = httpServer.arg("wifi");
+    String argpass = httpServer.arg("password");
+
+    Serial.println(argwifi);
+    Serial.println(argpass);
+  });
+
+  httpServer.on("/errorpage", HTTP_GET, [](){
+    httpServer.sendHeader("Connection", "close");
+    httpServer.send(200, "text/html", readErrorForm());
+    errorcontent = "";
+  });
   
   httpServer.begin();
 
   MDNS.addService("http", "tcp", 80);
+}
+
+String readConfigForm() {
+  File file = SPIFFS.open("/configform.html", "r");
+
+  if (!file) {
+    Serial.println("file open failed");
+  } else {
+
+    configcontent;
+
+    while (file.available()) {
+      char c = file.read();
+      configcontent += c;
+    }
+  }
+
+  file.close();
+  return configcontent;
+}
+
+String readErrorForm() {
+  File file = SPIFFS.open("/errorpage.html", "r");
+
+  if (!file) {
+    Serial.println("file open failed");
+  } else {
+
+    errorcontent;
+
+    while (file.available()) {
+      char c = file.read();
+      errorcontent += c;
+    }
+  }
+
+  file.close();
+  return errorcontent;
+}
+
+String content;
+void readConfig() {
+  File file = SPIFFS.open("/configs.txt", "r");
+
+  if (!file) {
+    Serial.println("file open failed");
+  } else {
+
+    content;
+
+    while (file.available()) {
+      char c = file.read();
+      content += c;
+    }
+
+    DynamicJsonDocument configs(600);
+    deserializeJson(configs, content);
+  
+    ipConf = configs["ip"];
+    midConf = configs["mId"];
+    wifiConf = configs["wifi"];
+    passConf = configs["password"];
+    subnetConf = configs["subnet"];
+    hostConf = configs["host"];
+  }
+
+  file.close();
 }
 
 bool handleFileRead(String path) {
@@ -194,11 +286,7 @@ bool handleFileRead(String path) {
     File file = SPIFFS.open(path, "r");
     size_t sent = httpServer.streamFile(file, contentType);
 
-    /*if (path == "/LEDOn.html") {
-      digitalWrite(2, LOW);
-    } else if (path == "/LEDOff.html") {
-      digitalWrite(2, HIGH);  
-    }*/
+    Serial.println(file.size());
 
     file.close();
     return true;
@@ -209,6 +297,7 @@ bool handleFileRead(String path) {
 }
 
 String getContentType(String filename) {
+  
   if (filename.endsWith(".htm")) {
     return "text/html";
   } else if (filename.endsWith(".html")) {
@@ -217,6 +306,8 @@ String getContentType(String filename) {
     return "text/css";
   } else if (filename.endsWith(".jpg")) {
     return "image/jpeg";
+  } else if (filename.endsWith(".svg")) {
+    return "image/svg+xml";  
   }
 
   return "text/plain";
@@ -281,14 +372,8 @@ void initstartTime() {
     } else {
 		  hours = hours + HH;
     }
-	
-    if ( hours < 10 ) {}
-	
-    if ( minutes < 10 ) {}
 
     seconds = (startTime % 60);
-	
-    if ( seconds < 10 ) {}
 }
 
 void loop() {
@@ -377,5 +462,5 @@ void loop() {
 	}
 
   Serial.println();
-  delay(1000);
+  delay(2000);
 }
