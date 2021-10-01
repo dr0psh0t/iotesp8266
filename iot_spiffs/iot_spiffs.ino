@@ -79,6 +79,7 @@ long val2;
 long val3;
 const int GMT_8 = 28800;
 String response;
+String configjson;
 String configcontent;
 String errorcontent;
 
@@ -187,6 +188,21 @@ void setup() {
     configcontent = "";
   });
 
+  httpServer.on("/authenticate", HTTP_POST, [](){
+    String userarg = httpServer.arg("username");
+    String passarg = httpServer.arg("password");
+
+    DynamicJsonDocument json(600);
+    deserializeJson(json, readConfigFile());
+
+    /*Serial.println(json[""]);
+    Serial.println();
+    Serial.println();
+    Serial.println();*/
+    
+    httpServer.send(200, "application/json", "{\"success\": true}");
+  });
+
   httpServer.on("/submitconfig", HTTP_POST, [](){
     String argwifi = httpServer.arg("wifi");
     String argpass = httpServer.arg("password");
@@ -194,15 +210,10 @@ void setup() {
     String arghost = httpServer.arg("host");
     String arggatewaydnshost = httpServer.arg("gatewaydnshost");
     String argmid = httpServer.arg("mId");
-    
-    Serial.println(argwifi);
-    Serial.println(argpass);
-    Serial.println(argsubnet);
-    Serial.println(arghost);
-    Serial.println(arggatewaydnshost);
-    Serial.println(argmid);
 
-    httpServer.send(200, "text/html", "Submit Successful");
+    String json = "{\"host\": "+arghost+", \"mId\": "+argmid+", \"wifi\": \""+argwifi+"\", \"password\": \""+argpass+"\", \"subnet\": "+argsubnet+", \"gatewaydnshost\": "+arggatewaydnshost+"}";
+
+    httpServer.send(200, "application/json", writeConfig(json));
   });
 
   httpServer.on("/errorpage", HTTP_GET, [](){
@@ -210,10 +221,36 @@ void setup() {
     httpServer.send(200, "text/html", readErrorForm());
     errorcontent = "";
   });
+
+  httpServer.on("/getconfig", HTTP_GET, [](){
+    httpServer.sendHeader("Connection", "close");
+    //httpServer.send(200, "text/html", readConfigFile());
+    httpServer.send(200, "application/json", readConfigFile());
+    configjson = "";
+  });
   
   httpServer.begin();
 
   MDNS.addService("http", "tcp", 80);
+}
+
+String readConfigFile() {
+  File file = SPIFFS.open("/configs.json", "r");
+
+  if (!file) {
+    Serial.println("file open failed");
+  } else {
+
+    configcontent;
+
+    while (file.available()) {
+      char c = file.read();
+      configjson += c;
+    }
+  }
+
+  file.close();
+  return configjson;
 }
 
 String readConfigForm() {
@@ -256,7 +293,7 @@ String readErrorForm() {
 
 String content;
 void readConfig() {
-  File file = SPIFFS.open("/configs.txt", "r");
+  File file = SPIFFS.open("/configs.json", "r");
 
   if (!file) {
     Serial.println("file open failed");
@@ -281,6 +318,26 @@ void readConfig() {
   }
 
   file.close();
+}
+
+String writeConfig(String confjson) {
+  File file = SPIFFS.open("/configs.json", "w+");
+  String ret;
+
+  if (!file) {
+    ret = "{\"success\": false, \"reason\": \"Configuration update failed.\"}";
+  } else {
+    int bytesWritten = file.print(confjson);
+
+    if (bytesWritten > 0) {
+      ret = "{\"success\": true}";
+    } else {
+      ret = "{\"success\": false, \"reason\": \"Configuration update failed.\"}";
+    }
+  }
+
+  file.close();
+  return ret;
 }
 
 bool handleFileRead(String path) {
@@ -474,3 +531,7 @@ void loop() {
   Serial.println();
   delay(2000);
 }
+
+//https://www.teachmemicro.com/esp8266-spiffs-web-server-nodemcu/
+//https://techtutorialsx.com/2019/05/28/esp8266-spiffs-writing-a-file/
+//https://arduino-esp8266.readthedocs.io/en/2.5.2/filesystem.html#open

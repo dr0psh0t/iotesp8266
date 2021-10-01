@@ -6,7 +6,68 @@
     <title>Configuration</title>
 </head>
 <body>
+Configure Settings
+<br><br>
+<!--<form method="POST" action="/submitconfig">-->
+WiFi: <br>
+<input type="text" id="wifi" name="wifi" placeholder="WiFi name" disabled="true">
+<br>
+Password: <br>
+<input type="text" id="password" name="password" placeholder="WiFi password" disabled="true">
+<br>
+Subnet: <br>
+<input type="number" id="subnet" name="subnet" placeholder="Subnet Id" min="1" max="255" disabled="true">
+<br>
+Host: <br>
+<input type="number" id="host" name="host" placeholder="Host Id" min="1" max="255" disabled="true">
+<br>
+Gateway & DNS host: <br>
+<input type="number" id="gatewaydnshost" name="gatewaydnshost" placeholder="Host of gateway and dns" min="1" max="255" disabled="true">
+<br>
+Machine Id: <br>
+<input type="text" id="mId" name="mId" placeholder="MCD Id" disabled="true">
+<br><br>
+<button id="submitbtn" onclick="submitConfig()" hidden="true">Submit</button>
 <script>
+	function authenticate(user, pass) {
+		var formData = new FormData();
+		formData.append("username", user);
+		formData.append("password", pass);
+		
+		var xhr = new XMLHttpRequest();
+		xhr.onreadystatechange = function() {
+			if (this.readyState === 4 && this.status === 200) {
+				const resjson = JSON.parse(xhr.response);
+				
+				if (resjson.success) {
+					document.getElementById("submitbtn").hidden = false;
+					document.getElementById("gatewaydnshost").disabled = false;
+					document.getElementById("host").disabled = false;
+					document.getElementById("subnet").disabled = false;
+					document.getElementById("password").disabled = false;
+					document.getElementById("wifi").disabled = false;
+					document.getElementById("mId").disabled = false;
+				} else {
+					location.assign("/errorpage");
+				}
+			}
+		};
+
+		xhr.onloadend = function() {
+			if (xhr.status !== 200) {
+				console.log('error '+this.status);
+			}
+		};
+
+		xhr.onerror = function(error) {
+			console.log('Network Error');
+			console.log(error);
+		};
+
+		xhr.open('POST', 'authenticate', true);
+		xhr.send(formData);
+	}
+
 	let user = prompt("Enter username:", "");
 	let pass;
 	
@@ -19,32 +80,10 @@
 			location.assign("/errorpage");
 		} else {
 			//	authenticate here
+			authenticate(user, pass);
 		}
 	}
-</script>
-Configure Settings
-<br><br>
-<!--<form method="POST" action="/submitconfig">-->
-WiFi: <br>
-<input type="text" id="wifi" name="wifi" placeholder="WiFi name">
-<br>
-Password: <br>
-<input type="text" id="password" name="password" placeholder="WiFi password">
-<br>
-Subnet: <br>
-<input type="number" id="subnet" name="subnet" placeholder="Subnet Id" min="1" max="255">
-<br>
-Host: <br>
-<input type="number" id="host" name="host" placeholder="Host Id" min="1" max="255">
-<br>
-Gateway DNS host: <br>
-<input type="number" id="gatewaydnshost" name="gatewaydnshost" placeholder="Host of gateway and dns" min="1" max="255">
-<br>
-Machine Id: <br>
-<input type="text" id="mId" name="mId" placeholder="MCD Id">
-<br><br>
-<button onclick="submitConfig()">Submit</button>
-<script>
+
 	function submitConfig() {
 		var wifi = document.getElementById("wifi").value;
 		var pass = document.getElementById("password").value;
@@ -116,13 +155,6 @@ Machine Id: <br>
 			return;
 		}
 		
-		console.log(wifi);
-		console.log(pass);
-		console.log(subnet);
-		console.log(host);
-		console.log(gatewaydnshost);
-		console.log(mid);
-		
 		var formData = new FormData();
 		formData.append("wifi", wifi);
 		formData.append("password", pass);
@@ -134,13 +166,14 @@ Machine Id: <br>
 		var xhr = new XMLHttpRequest();
 		xhr.onreadystatechange = function() {
 			if (this.readyState === 4 && this.status === 200) {
-				alert("submit successful");
+				const resjson = JSON.parse(xhr.response);
+				alert(resjson.success ? "Configuration has been updated" : resjson.reason);
+				location.reload(); 
 			}
 		};
 
 		xhr.onloadend = function() {
-			if (xhr.status === 200) {
-			} else {
+			if (xhr.status != 200) {
 				console.log('error '+this.status);
 			}
 		};
