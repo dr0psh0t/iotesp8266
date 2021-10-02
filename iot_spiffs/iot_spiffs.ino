@@ -188,6 +188,7 @@ void setup() {
     httpServer.sendHeader("Connection", "close");
     httpServer.send(200, "text/html", readAuthForm());
     authFormContent = "";
+    isOnline = false;
   });
 
   httpServer.on("/configure", HTTP_POST, [](){
@@ -204,8 +205,10 @@ void setup() {
     
     if ((userarg == username) && (passarg = userpass)) {
       httpServer.send(200, "text/html", readConfigForm());
+      isOnline = true;
     } else {
       httpServer.send(200, "text/html", "Login Failed.");
+      isOnline = false;
     }
     
     configcontent = "";
@@ -234,6 +237,12 @@ void setup() {
 
   httpServer.on("/getconfig", HTTP_GET, [](){
     httpServer.sendHeader("Connection", "close");
+    httpServer.send(200, "application/json", isOnline ? readConfigFile() : "{\"success\": false, \"reason\": \"Please Login.\"}");
+    configjson = "";
+  });
+
+  httpServer.on("/seeconfig", HTTP_GET, [](){
+    httpServer.sendHeader("Connection", "close");
     httpServer.send(200, "application/json", readConfigFile());
     configjson = "";
   });
@@ -247,7 +256,7 @@ String readConfigFile() {
   File file = SPIFFS.open("/configs.json", "r");
 
   if (!file) {
-    Serial.println("file open failed");
+    configjson = "{\"success\": false, \"reason\": \"Config file open failed.\"}";
   } else {
 
     configjson = "";
@@ -284,7 +293,7 @@ String readConfigForm() {
   File file = SPIFFS.open("/configform.html", "r");
 
   if (!file) {
-    Serial.println("file open failed");
+    configcontent = "Error occurred in the form";
   } else {
 
     configcontent;
@@ -303,7 +312,7 @@ String readErrorForm() {
   File file = SPIFFS.open("/errorpage.html", "r");
 
   if (!file) {
-    Serial.println("file open failed");
+    errorcontent = "Error has occurred";
   } else {
 
     errorcontent;
@@ -323,10 +332,10 @@ void readConfig() {
   File file = SPIFFS.open("/configs.json", "r");
 
   if (!file) {
-    Serial.println("file open failed");
+    Serial.println("Reading config.json has failed.");
   } else {
 
-    content;
+    content = "";
 
     while (file.available()) {
       char c = file.read();
@@ -368,7 +377,7 @@ String writeConfig(String confjson) {
 }
 
 bool handleFileRead(String path) {
-  Serial.println("handleFileRead: "+path);
+  //Serial.println("handleFileRead: "+path);
 
   if (path.endsWith("/")) {
     path += "main.html";
@@ -380,13 +389,13 @@ bool handleFileRead(String path) {
     File file = SPIFFS.open(path, "r");
     size_t sent = httpServer.streamFile(file, contentType);
 
-    Serial.println(file.size());
+    //Serial.println(file.size());
 
     file.close();
     return true;
   }
 
-  Serial.println("\tFile Not Found");
+  //Serial.println("\tFile Not Found");
   return false;
 }
 
@@ -555,7 +564,6 @@ void loop() {
 		}
 	}
 
-  Serial.println();
   delay(2000);
 }
 
