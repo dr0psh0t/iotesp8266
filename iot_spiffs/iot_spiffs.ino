@@ -82,6 +82,7 @@ String response;
 String configjson;
 String configcontent;
 String errorcontent;
+String authFormContent;
 
 const char* ipConf = "";
 int midConf;
@@ -89,6 +90,7 @@ const char* wifiConf = "";
 const char* passConf = "";
 int subnetConf;
 int hostConf;
+bool isOnline = false;
 
 ESP8266WebServer httpServer(80);
 ESP8266HTTPUpdateServer httpUpdater;
@@ -182,13 +184,13 @@ void setup() {
     }
   });
 
-  httpServer.on("/configure", HTTP_GET, [](){
+  httpServer.on("/auth", HTTP_GET, [](){
     httpServer.sendHeader("Connection", "close");
-    httpServer.send(200, "text/html", readConfigForm());
-    configcontent = "";
+    httpServer.send(200, "text/html", readAuthForm());
+    authFormContent = "";
   });
 
-  httpServer.on("/authenticate", HTTP_POST, [](){
+  httpServer.on("/configure", HTTP_POST, [](){
     String userarg = httpServer.arg("username");
     String passarg = httpServer.arg("password");
 
@@ -197,19 +199,16 @@ void setup() {
 
     String username = json["username"];
     String userpass = json["userpass"];
-    String jsonret;
-
-    if (userarg == username) {
-      if (passarg == userpass) {
-        jsonret = "{\"success\": true}";
-      } else {
-        jsonret = "{\"success\": false, \"reason\": \"Authentication Error\"}";
-      }
+    
+    httpServer.sendHeader("Connection", "close");
+    
+    if ((userarg == username) && (passarg = userpass)) {
+      httpServer.send(200, "text/html", readConfigForm());
     } else {
-      jsonret = "{\"success\": false, \"reason\": \"Authentication Error\"}";
+      httpServer.send(200, "text/html", "Login Failed.");
     }
     
-    httpServer.send(200, "application/json", jsonret);
+    configcontent = "";
   });
 
   httpServer.on("/submitconfig", HTTP_POST, [](){
@@ -261,6 +260,24 @@ String readConfigFile() {
 
   file.close();
   return configjson;
+}
+
+String readAuthForm() {
+  File file = SPIFFS.open("/authform.html", "r");
+
+  if (!file) {
+    authFormContent = "Authentication Form Error.";
+  } else {
+    authFormContent = "";
+
+    while (file.available()) {
+      char c = file.read();
+      authFormContent += c;
+    }
+  }
+
+  file.close();
+  return authFormContent;
 }
 
 String readConfigForm() {
@@ -545,3 +562,4 @@ void loop() {
 //https://www.teachmemicro.com/esp8266-spiffs-web-server-nodemcu/
 //https://techtutorialsx.com/2019/05/28/esp8266-spiffs-writing-a-file/
 //https://arduino-esp8266.readthedocs.io/en/2.5.2/filesystem.html#open
+//https://links2004.github.io/Arduino/d3/d58/class_e_s_p8266_web_server.html
