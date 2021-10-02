@@ -195,12 +195,21 @@ void setup() {
     DynamicJsonDocument json(600);
     deserializeJson(json, readConfigFile());
 
-    /*Serial.println(json[""]);
-    Serial.println();
-    Serial.println();
-    Serial.println();*/
+    String username = json["username"];
+    String userpass = json["userpass"];
+    String jsonret;
+
+    if (userarg == username) {
+      if (passarg == userpass) {
+        jsonret = "{\"success\": true}";
+      } else {
+        jsonret = "{\"success\": false, \"reason\": \"Authentication Error\"}";
+      }
+    } else {
+      jsonret = "{\"success\": false, \"reason\": \"Authentication Error\"}";
+    }
     
-    httpServer.send(200, "application/json", "{\"success\": true}");
+    httpServer.send(200, "application/json", jsonret);
   });
 
   httpServer.on("/submitconfig", HTTP_POST, [](){
@@ -210,8 +219,10 @@ void setup() {
     String arghost = httpServer.arg("host");
     String arggatewaydnshost = httpServer.arg("gatewaydnshost");
     String argmid = httpServer.arg("mId");
+    String argusername = httpServer.arg("username");
+    String arguserpass = httpServer.arg("userpass");
 
-    String json = "{\"host\": "+arghost+", \"mId\": "+argmid+", \"wifi\": \""+argwifi+"\", \"password\": \""+argpass+"\", \"subnet\": "+argsubnet+", \"gatewaydnshost\": "+arggatewaydnshost+"}";
+    String json = "{\"username\": \""+argusername+"\", \"userpass\": \""+arguserpass+"\", \"host\": "+arghost+", \"mId\": "+argmid+", \"wifi\": \""+argwifi+"\", \"password\": \""+argpass+"\", \"subnet\": "+argsubnet+", \"gatewaydnshost\": "+arggatewaydnshost+"}";
 
     httpServer.send(200, "application/json", writeConfig(json));
   });
@@ -224,7 +235,6 @@ void setup() {
 
   httpServer.on("/getconfig", HTTP_GET, [](){
     httpServer.sendHeader("Connection", "close");
-    //httpServer.send(200, "text/html", readConfigFile());
     httpServer.send(200, "application/json", readConfigFile());
     configjson = "";
   });
@@ -241,7 +251,7 @@ String readConfigFile() {
     Serial.println("file open failed");
   } else {
 
-    configcontent;
+    configjson = "";
 
     while (file.available()) {
       char c = file.read();

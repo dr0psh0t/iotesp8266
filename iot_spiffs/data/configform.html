@@ -26,9 +26,17 @@ Gateway & DNS host: <br>
 <br>
 Machine Id: <br>
 <input type="text" id="mId" name="mId" placeholder="MCD Id" disabled="true">
+<br>
+User name: <br>
+<input type="text" id="username" name="username" placeholder="User Name" disabled="true">
+<br>
+User pass: <br>
+<input type="password" id="userpass" name="userpass" placeholder="User pass" disabled="true">
 <br><br>
 <button id="submitbtn" onclick="submitConfig()" hidden="true">Submit</button>
 <script>
+	
+
 	function authenticate(user, pass) {
 		var formData = new FormData();
 		formData.append("username", user);
@@ -47,6 +55,32 @@ Machine Id: <br>
 					document.getElementById("password").disabled = false;
 					document.getElementById("wifi").disabled = false;
 					document.getElementById("mId").disabled = false;
+					document.getElementById("username").disabled = false;
+					document.getElementById("userpass").disabled = false;
+					
+					var ajax = new XMLHttpRequest();
+					ajax.onreadystatechange = function() {
+						if (this.readyState === 4 && this.status === 200) {
+							try {
+								const resjson = JSON.parse(ajax.response);
+								
+								document.getElementById("gatewaydnshost").value = resjson.gatewaydnshost
+								document.getElementById("host").value = resjson.host;
+								document.getElementById("subnet").value = resjson.subnet;
+								document.getElementById("password").value = resjson.password;
+								document.getElementById("wifi").value = resjson.wifi;
+								document.getElementById("mId").value = resjson.mId;
+								document.getElementById("username").value = resjson.username;
+								document.getElementById("userpass").value = resjson.userpass;
+							} catch (err) {
+								console.log(err);
+								location.assign("/errorpage");
+							}
+						}
+					};
+					ajax.open('GET', 'getconfig', true);
+					ajax.send();
+					
 				} else {
 					location.assign("/errorpage");
 				}
