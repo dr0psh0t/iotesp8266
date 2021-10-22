@@ -20,11 +20,12 @@
 #include <FS.h>
 
 /*  north */
-int hostId = 198;
-int mId = 100071;
+int hostId = 192;
+int mId = 10007;
+//const char* ntpIp = "time.nist.gov";
 const char* ntpIp = "192.168.1.100";
-//String api = "http://192.168.1.30:8080/mcsa/IoTCheckWorkQueue";
-String api = "http://192.168.1.150:8080/joborder/IoTCheckWorkQueue";
+String api = "http://192.168.1.30:8080/mcsa/IoTCheckWorkQueue";
+//String api = "http://192.168.1.150:8080/joborder/IoTCheckWorkQueue";
 //String ssid = "wmdcDev";
 //String password = "(===|===Dev===|===)";
 String ssid = "Wifi_Er";
@@ -34,14 +35,13 @@ String password = "wmdcwifier";
 //String ssid = "wifi_mf2";
 //String password = "wmdc_1959";
 
-/* central
-int hostId = 43;
-int mId = 200033;
+/* central*/
+/*int hostId = 44;
+int mId = 200035;
 const char* ntpIp = "192.168.1.149";
 String api = "http://192.168.1.149:8080/joborder/IoTCheckWorkQueue";
 String ssid = "Wifi_Central";
-String password = "(---WifiCentral---)";
- */
+String password = "(---WifiCentral---)";*/
 
 /* south 
 int hostId = 49;
@@ -203,7 +203,7 @@ void setup() {
     
     httpServer.sendHeader("Connection", "close");
     
-    if ((userarg == username) && (passarg = userpass)) {
+    if ((userarg == username) && (passarg == userpass)) {
       httpServer.send(200, "text/html", readConfigForm());
       isOnline = true;
     } else {
@@ -427,6 +427,7 @@ void inithttp() {
 
 		if (httpResponseCode > 0) {
 			response = http.getString();
+      //Serial.println(response);
 			http.end();
 		}
 	}
@@ -538,33 +539,43 @@ void loop() {
 				digitalWrite(D6, HIGH);
 			}
 			
-			if(dTime - val1 <= timeClient.getEpochTime()) {
+			if (dTime - val1 <= timeClient.getEpochTime()) {
 				digitalWrite(D6, LOW);
 			}
 			
-			if(dTime - val2 <= timeClient.getEpochTime()) {
+			if (dTime - val2 <= timeClient.getEpochTime()) {
 				digitalWrite(D6, HIGH);
 			}
 			
-			if(dTime - val3 <= timeClient.getEpochTime()) {
+			if (dTime - val3 <= timeClient.getEpochTime()) {
 				digitalWrite(D6, LOW);
 			}
-			
-			if(dTime - 4 <= timeClient.getEpochTime()) {
+
+      if ((dTime - 60 <= timeClient.getEpochTime()) && (dTime-56 >= timeClient.getEpochTime())) {
+        digitalWrite(D6, HIGH);
+        Serial.println("WARNING");
+      } /*else {
+        digitalWrite(D6, LOW);
+      }*/
+
+      //  4 seconds buzzer before turn off
+			if (dTime - 4 <= timeClient.getEpochTime()) {
 				digitalWrite(D6, HIGH);
+        Serial.println("WARNING");
 			}
-			
-     if (dTime <= timeClient.getEpochTime()) {
-				digitalWrite(D5, LOW);
-				digitalWrite(D3, LOW);
-				digitalWrite(D4, HIGH);
-				digitalWrite(D6, LOW);
-				inwork = 0;
-			}
+
+      //  turn off
+      if (dTime <= timeClient.getEpochTime()) {
+        digitalWrite(D5, LOW);
+        digitalWrite(D3, LOW);
+        digitalWrite(D4, HIGH);
+        digitalWrite(D6, LOW);
+        inwork = 0;
+      }
 		}
 	}
 
-  delay(2000);
+  delay(1000);
 }
 
 //https://www.teachmemicro.com/esp8266-spiffs-web-server-nodemcu/
