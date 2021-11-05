@@ -4,45 +4,75 @@
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width,initial-scale=1'/>
     <title>Configuration</title>
+	<link rel="stylesheet" href="style.css">
 </head>
 <body>
-Configure Settings
-<br><br>
-WiFi: <br>
-<input type="text" id="wifi" name="wifi" placeholder="WiFi name">
-<br>
-Password: <br>
-<input type="text" id="password" name="password" placeholder="WiFi password">
-<br>
-Subnet: <br>
-<input type="number" id="subnet" name="subnet" placeholder="Subnet Id" min="1" max="255">
-<br>
-Host: <br>
-<input type="number" id="host" name="host" placeholder="Host Id" min="1" max="255">
-<br>
-Gateway & DNS host: <br>
-<input type="number" id="gatewaydnshost" name="gatewaydnshost" placeholder="Host of gateway and dns" min="1" max="255">
-<br>
-Machine Id: <br>
-<input type="text" id="mId" name="mId" placeholder="MCD Id">
-<br>
-User name: <br>
-<input type="text" id="username" name="username" placeholder="User Name">
-<br>
-User pass: <br>
-<input type="password" id="userpass" name="userpass" placeholder="User pass">
-<br><br>
-<button id="submitbtn" onclick="submitConfig()">Submit</button>
+<div class="box">
+	<div class="inputBox">
+		<input type="text" id="wifi" name="wifi" required onkeyup="this.setAttribute('value', this.value);" value="">
+		<label>WiFi name</label>
+	</div>
+	<div class="inputBox">
+		<input type="text" id="password" name="password" required onkeyup="this.setAttribute('value', this.value);" value="">
+		<label>WiFi Password</label>
+	</div>
+	<div class="inputBox">
+		<input type="number" id="networkid1" name="networkid1" min="1" max="255" required onkeyup="this.setAttribute('value', this.value);" value="">
+		<label>Network Id 1</label>
+	</div>
+	<div class="inputBox">
+		<input type="number" id="networkid2" name="networkid2" min="1" max="255" required onkeyup="this.setAttribute('value', this.value);" value="">
+		<label>Network Id 2</label>
+	</div>
+	<div class="inputBox">
+		<input type="number" id="subnet" name="subnet" min="1" max="255" required onkeyup="this.setAttribute('value', this.value);" value="">
+		<label>Subnet Id</label>
+	</div>
+	<div class="inputBox">
+		<input type="number" id="host" name="host" min="1" max="255" required onkeyup="this.setAttribute('value', this.value);" value="">
+		<label>Host Id</label>
+	</div>
+	<div class="inputBox">
+		<input type="text" id="ntpip" name="ntpip" required onkeyup="this.setAttribute('value', this.value);" value="">
+		<label>NTP IP</label>
+	</div>
+	<div class="inputBox">
+		<input type="text" id="mcdapiendpoint" name="mcdapiendpoint" required onkeyup="this.setAttribute('value', this.value);" value="">
+		<label>Mcd Endpoint</label>
+	</div>
+	<div class="inputBox">
+		<input type="number" id="gatewaydnshost" name="gatewaydnshost" min="1" max="255" required onkeyup="this.setAttribute('value', this.value);" value="">
+		<label>Gateway and DNS host</label>
+	</div>
+	<div class="inputBox">
+		<input type="text" id="mId" name="mId" required onkeyup="this.setAttribute('value', this.value);" value="">
+		<label>Machine Id</label>
+	</div>
+	<div class="inputBox">
+		<input type="text" id="username" name="username" required onkeyup="this.setAttribute('value', this.value);" value="">
+		<label>Username</label>
+	</div>
+	<div class="inputBox">
+		<input type="password" id="userpass" name="userpass" required onkeyup="this.setAttribute('value', this.value);" value="">
+		<label>Password</label>
+	</div>
+	<input type="submit" value="Update" onclick="submitConfig()">
+</div>
 <script>
 	var ajax = new XMLHttpRequest();
 	ajax.onreadystatechange = function() {
 		if (this.readyState === 4 && this.status === 200) {
 			try {
 				const resjson = JSON.parse(ajax.response);
+				console.log(resjson);
 				
 				document.getElementById("gatewaydnshost").value = resjson.gatewaydnshost
+				document.getElementById("networkid1").value = resjson.networkid1;
+				document.getElementById("networkid2").value = resjson.networkid2;
 				document.getElementById("host").value = resjson.host;
 				document.getElementById("subnet").value = resjson.subnet;
+				document.getElementById("ntpip").value = resjson.ntpip;
+				document.getElementById("mcdapiendpoint").value = resjson.mcdapiendpoint;
 				document.getElementById("password").value = resjson.password;
 				document.getElementById("wifi").value = resjson.wifi;
 				document.getElementById("mId").value = resjson.mId;
@@ -58,6 +88,10 @@ User pass: <br>
 	ajax.send();
 
 	function submitConfig() {
+		var networkid1 = document.getElementById("networkid1").value;
+		var networkid2 = document.getElementById("networkid2").value;
+		var ntpip = document.getElementById("ntpip").value;
+		var mcdapiendpoint = document.getElementById("mcdapiendpoint").value;
 		var wifi = document.getElementById("wifi").value;
 		var pass = document.getElementById("password").value;
 		var subnet = document.getElementById("subnet").value;
@@ -66,6 +100,26 @@ User pass: <br>
 		var mid = document.getElementById("mId").value;
 		var username = document.getElementById("username").value;
 		var userpass = document.getElementById("userpass").value;
+		
+		if (networkid1 === null || networkid1 === "") {
+			alert("Please enter networkid1");
+			return;
+		}
+		
+		if (networkid2 === null || networkid2 === "") {
+			alert("Please enter networkid2");
+			return;
+		}
+		
+		if (ntpip === null || ntpip === "") {
+			alert("Please enter ntpip");
+			return;
+		}
+		
+		if (mcdapiendpoint === null || mcdapiendpoint === "") {
+			alert("Please enter mcdapiendpoint");
+			return;
+		}
 		
 		if (wifi === null || wifi === "") {
 			alert("Please enter wifi");
@@ -141,6 +195,10 @@ User pass: <br>
 		}
 		
 		var formData = new FormData();
+		formData.append("networkid1", networkid1);
+		formData.append("networkid2", networkid2);
+		formData.append("ntpip", ntpip);
+		formData.append("mcdapiendpoint", mcdapiendpoint);
 		formData.append("wifi", wifi);
 		formData.append("password", pass);
 		formData.append("subnet", subnet);

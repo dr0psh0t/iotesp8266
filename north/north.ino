@@ -18,7 +18,7 @@
 
 const char* host = "none";
 const char* hostName = "none";
-int hostId = 192;
+int hostId = 51;
 int mId = 10007;
 
 //  Dev
@@ -183,8 +183,8 @@ void inithttp() {
   Serial.println("=== inithttp() ===");
   
 	if(WiFi.status()== WL_CONNECTED) {   //Check WiFi connection status
-		//http.begin("http://192.168.1.150:8080/joborder/IoTCheckWorkQueue");		//Specify destination for HTTP request
-		http.begin("http://192.168.1.30:8080/mcsa/IoTCheckWorkQueue");		//Specify destination for HTTP request
+		http.begin("http://192.168.1.150:8080/joborder/IoTCheckWorkQueue");		//Specify destination for HTTP request
+		//http.begin("http://192.168.1.30:8080/mcsa/IoTCheckWorkQueue");		//Specify destination for HTTP request
     //http.begin("http://192.168.1.150:8080/dhijo/IoTCheckWorkQueue");    //Specify destination for HTTP request
 		//http.begin("http://58.69.126.27:3316/joborder/IoTCheckWorkQueue");    //Specify destination for HTTP request
 		http.addHeader("Content-Type", "application/x-www-form-urlencoded");	//Specify content-type header
@@ -319,7 +319,7 @@ void loop() {
   Serial.print("seconds: ");
   Serial.println(sec_elapsed);
 
-  if (sec_elapsed > 2) {
+  if (sec_elapsed > 29) {
     sec_elapsed = 0;
 
     //  query and check server response by calling "inithttp()".

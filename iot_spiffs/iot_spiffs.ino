@@ -19,50 +19,9 @@
 #include "ArduinoJson.h"
 #include <FS.h>
 
-/*  north */
-int hostId = 192;
-int mId = 10007;
-//const char* ntpIp = "time.nist.gov";
-const char* ntpIp = "192.168.1.100";
-String api = "http://192.168.1.30:8080/mcsa/IoTCheckWorkQueue";
-//String api = "http://192.168.1.150:8080/joborder/IoTCheckWorkQueue";
-//String ssid = "wmdcDev";
-//String password = "(===|===Dev===|===)";
-String ssid = "Wifi_Er";
-String password = "wmdcwifier";
-//String ssid = "Wifi_Mf";
-//String password = "wmdcwifimf";
-//String ssid = "wifi_mf2";
-//String password = "wmdc_1959";
-
-/* central*/
-/*int hostId = 44;
-int mId = 200035;
-const char* ntpIp = "192.168.1.149";
-String api = "http://192.168.1.149:8080/joborder/IoTCheckWorkQueue";
-String ssid = "Wifi_Central";
-String password = "(---WifiCentral---)";*/
-
-/* south 
-int hostId = 49;
-int mId = 3000113;
-const char* ntpIp = "192.168.2.99";
-String api = "http://192.168.2.99:8080/joborder/IoTCheckWorkQueue";
-String ssid = "Wifi_South";
-String password = "(---WifiSouth---)";
- */
-
-/* bohol 
-int hostId = 51;
-int mId = 800038;
-const char* ntpIp = "192.168.2.99";
-String api = "http://192.168.2.155:8080/joborder/IoTCheckWorkQueue";
-String ssid = "Wifi_Er";
-String password = "wmdcwifier";
- */
-
-const char* host = "daryll";
-const char* hostName = "daryll";
+//  enter host.local in browser
+const char* host = "seiwa100010";
+const char* hostName = "seiwa100010";
 
 int sec_elapsed = 0;
 int success;
@@ -83,21 +42,27 @@ String configjson;
 String configcontent;
 String errorcontent;
 String authFormContent;
-
-const char* ipConf = "";
-int midConf;
-const char* wifiConf = "";
-const char* passConf = "";
-int subnetConf;
-int hostConf;
 bool isOnline = false;
+
+int networkid1conf = 0;
+int networkid2conf = 0;
+int subnetconf = 0;
+int hostconf = 0;
+const char* ntpipconf = "";
+String mcdapiendpointconf = "";
+int midconf = 0;
+String wificonf = "";
+String passwordconf = "";
+int gatewaydnshostconf = 0;
+String usernameconf = "";
+String userpassconf = "";
 
 ESP8266WebServer httpServer(80);
 ESP8266HTTPUpdateServer httpUpdater;
 HTTPClient http;
 
 WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP, ntpIp, GMT_8);
+NTPClient timeClient(ntpUDP, "192.168.1.30", GMT_8);
 RtcDS3231<TwoWire> Rtc(Wire);
 #define countof(a) (sizeof(a) / sizeof(a[0]))
 LiquidCrystal_I2C lcd(0x27,16,2);
@@ -108,25 +73,14 @@ void setup() {
   pinMode(D3, OUTPUT);
   pinMode(D4, OUTPUT);
   pinMode(D6, OUTPUT);
-
-  Serial.begin(115200);
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
-  IPAddress ip(192,168,1,hostId);
-  IPAddress gateway(192,168,1,100);
-  IPAddress subnet(255,255,255,0);
-  IPAddress dns(192,168,1,100);
-  WiFi.config(ip, gateway, subnet,dns);
   
-  while (WiFi.waitForConnectResult() != WL_CONNECTED) {
-    delay(500);
-    ESP.restart();
-  }
-
+  Serial.begin(115200);
+  
   if (!SPIFFS.begin()) {
     Serial.println("SPIFFS Mount failed");  
   } else {
     Serial.println("SPIFFS Mount successful");
+    readConfig();
   }
   
   ArduinoOTA.setHostname(hostName);
@@ -215,6 +169,10 @@ void setup() {
   });
 
   httpServer.on("/submitconfig", HTTP_POST, [](){
+    String networkid1 = httpServer.arg("networkid1");
+    String networkid2 = httpServer.arg("networkid2");
+    String ntpip = httpServer.arg("ntpip");
+    String mcdapiendpoint = httpServer.arg("mcdapiendpoint");    
     String argwifi = httpServer.arg("wifi");
     String argpass = httpServer.arg("password");
     String argsubnet = httpServer.arg("subnet");
@@ -224,7 +182,7 @@ void setup() {
     String argusername = httpServer.arg("username");
     String arguserpass = httpServer.arg("userpass");
 
-    String json = "{\"username\": \""+argusername+"\", \"userpass\": \""+arguserpass+"\", \"host\": "+arghost+", \"mId\": "+argmid+", \"wifi\": \""+argwifi+"\", \"password\": \""+argpass+"\", \"subnet\": "+argsubnet+", \"gatewaydnshost\": "+arggatewaydnshost+"}";
+    String json = "{\"mcdapiendpoint\": \""+mcdapiendpoint+"\", \"ntpip\": \""+ntpip+"\", \"networkid2\": "+networkid2+", \"networkid1\": "+networkid1+", \"username\": \""+argusername+"\", \"userpass\": \""+arguserpass+"\", \"host\": "+arghost+", \"mId\": "+argmid+", \"wifi\": \""+argwifi+"\", \"password\": \""+argpass+"\", \"subnet\": "+argsubnet+", \"gatewaydnshost\": "+arggatewaydnshost+"}";
 
     httpServer.send(200, "application/json", writeConfig(json));
   });
@@ -332,7 +290,7 @@ void readConfig() {
   File file = SPIFFS.open("/configs.json", "r");
 
   if (!file) {
-    Serial.println("Reading config.json has failed.");
+    Serial.println("Reading configs.json has failed.");
   } else {
 
     content = "";
@@ -345,12 +303,34 @@ void readConfig() {
     DynamicJsonDocument configs(600);
     deserializeJson(configs, content);
   
-    ipConf = configs["ip"];
-    midConf = configs["mId"];
-    wifiConf = configs["wifi"];
-    passConf = configs["password"];
-    subnetConf = configs["subnet"];
-    hostConf = configs["host"];
+    networkid1conf = configs["networkid1"].as<int>();
+    networkid2conf = configs["networkid2"].as<int>();
+    subnetconf = configs["subnet"].as<int>();
+    hostconf = configs["host"].as<int>();
+    mcdapiendpointconf = configs["mcdapiendpoint"].as<String>();
+    midconf = configs["mId"].as<int>();
+    wificonf = configs["wifi"].as<String>();
+    passwordconf = configs["password"].as<String>();
+    gatewaydnshostconf = configs["gatewaydnshost"].as<int>();
+    usernameconf = configs["username"].as<String>();
+    userpassconf = configs["userpass"].as<String>();
+    ntpipconf = configs["ntpip"].as<String>().c_str();
+
+    NTPClient locntp(ntpUDP, "192.168.1.100", GMT_8);
+    timeClient = locntp;
+
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(wificonf, passwordconf);
+    IPAddress ip(networkid1conf,networkid2conf,subnetconf,hostconf);
+    IPAddress gateway(networkid1conf,networkid2conf,subnetconf,gatewaydnshostconf);
+    IPAddress subnet(255,255,255,0);
+    IPAddress dns(networkid1conf,networkid2conf,subnetconf,100);
+    WiFi.config(ip,gateway,subnet,dns);
+    
+    while (WiFi.waitForConnectResult() != WL_CONNECTED) {
+      delay(500);
+      ESP.restart();
+    }
   }
 
   file.close();
@@ -377,8 +357,6 @@ String writeConfig(String confjson) {
 }
 
 bool handleFileRead(String path) {
-  //Serial.println("handleFileRead: "+path);
-
   if (path.endsWith("/")) {
     path += "main.html";
   }
@@ -389,13 +367,10 @@ bool handleFileRead(String path) {
     File file = SPIFFS.open(path, "r");
     size_t sent = httpServer.streamFile(file, contentType);
 
-    //Serial.println(file.size());
-
     file.close();
     return true;
   }
 
-  //Serial.println("\tFile Not Found");
   return false;
 }
 
@@ -417,17 +392,16 @@ String getContentType(String filename) {
 }
 
 void inithttp() {  
-	if(WiFi.status()== WL_CONNECTED) {
-		http.begin(api);
+	if (WiFi.status()== WL_CONNECTED) {
+		http.begin(mcdapiendpointconf);
 		http.addHeader("Content-Type", "application/x-www-form-urlencoded");
 
 		char params[128];
-		snprintf(params, sizeof params, "%s%d", "uId=2&h=3&fw=4&timestamp=5&mId=", mId);
+		snprintf(params, sizeof params, "%s%d", "uId=2&h=3&fw=4&timestamp=5&mId=", midconf);
 		httpResponseCode = http.POST(params);
 
 		if (httpResponseCode > 0) {
 			response = http.getString();
-      //Serial.println(response);
 			http.end();
 		}
 	}
@@ -554,9 +528,7 @@ void loop() {
       if ((dTime - 60 <= timeClient.getEpochTime()) && (dTime-56 >= timeClient.getEpochTime())) {
         digitalWrite(D6, HIGH);
         Serial.println("WARNING");
-      } /*else {
-        digitalWrite(D6, LOW);
-      }*/
+      }
 
       //  4 seconds buzzer before turn off
 			if (dTime - 4 <= timeClient.getEpochTime()) {

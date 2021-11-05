@@ -1,19 +1,28 @@
 <!DOCTYPE html>
-<html lang='en'>
+<html lang="en">
 <head>
-    <meta charset='UTF-8'>
-    <meta name='viewport' content='width=device-width,initial-scale=1'/>
-    <title>Authentication</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Arduino Login</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-<body>	
-	<form method="POST" action="/configure">
-		Username: <br>
-		<input type="text" id="username" name="username" placeholder="your name">
-		<br>
-		Password: <br>
-		<input type="password" id="password" name="password" placeholder="your password">
-		<br><br>
-		<button id="submitbtn">Login</button>
-	</form>
+<body>
+	<div class="box">
+		<form method="POST" action="/configure">
+			<!--<div class="imgcontainer">
+				<img src="arduino_logo.png" alt="Avatar" class="avatar">
+			</div>-->
+			<div class="inputBox">
+				<input type="text" id="username" name="username" required onkeyup="this.setAttribute('value', this.value);" value="">
+				<label>Username</label>
+			</div>
+			<div class="inputBox">
+				<input type="password" id="password" name="password" required onkeyup="this.setAttribute('value', this.value);" value="">
+				<label>Password</label>
+			</div>
+			<input type="submit" value="Login">
+		</form>
+	</div>
 </body>
 </html>
