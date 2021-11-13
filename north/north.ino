@@ -18,8 +18,8 @@
 
 const char* host = "none";
 const char* hostName = "none";
-int hostId = 51;
-int mId = 10007;
+int hostId = 82;
+int mId = 100071;
 
 //  Dev
 //const char* ssid = "wmdcDev";
