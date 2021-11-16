@@ -1,14 +1,14 @@
 {
 	"networkid1": 192,
 	"networkid2": 168,
-	"subnet": 1, 
-	"host": 64,
+	"subnet": 1,
+	"host": 95,
 	"ntpip": "192.168.1.100",
-	"mcdapiendpoint": "http://192.168.1.150:8080/joborder/IoTCheckWorkQueue",
-	"mId": 100010,
-	"wifi": "Wifi_Mf",
-	"password": "wmdcwifimf",	
-	"gatewaydnshost": 100, 
+	"mcdapiendpoint": "http://192.168.1.30:8080/mcsa/IoTCheckWorkQueue",
+	"mId": 1000292,
+	"wifi": "Wifi_Er",
+	"password": "wmdcwifier",
+	"gatewaydnshost": 100,
 	"username": "wmdc123",
 	"userpass": "wmdc123"
 }

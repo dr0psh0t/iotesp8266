@@ -20,12 +20,13 @@
 #include <FS.h>
 
 //  enter host.local in browser
-const char* host = "seiwa100010";
-const char* hostName = "seiwa100010";
+const char* host = "zanrosso1000292";
+const char* hostName = "zanrosso1000292";
 
 int sec_elapsed = 0;
+int noWorkPassed = 0;
 int success;
-int httpResponseCode;
+int statusCode;
 int inwork = 0;
 char HH = 00;
 char MM = 00;
@@ -62,7 +63,7 @@ ESP8266HTTPUpdateServer httpUpdater;
 HTTPClient http;
 
 WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP, "192.168.1.30", GMT_8);
+NTPClient timeClient(ntpUDP, "192.168.1.100", GMT_8);
 RtcDS3231<TwoWire> Rtc(Wire);
 #define countof(a) (sizeof(a) / sizeof(a[0]))
 LiquidCrystal_I2C lcd(0x27,16,2);
@@ -97,6 +98,9 @@ void setup() {
   ArduinoOTA.begin();
 
   timeClient.begin();
+  timeClient.update();
+  //Serial.println("timeClient:");
+  //Serial.println(timeClient.getEpochTime());
   
   lcd.init();
   lcd.backlight();
@@ -117,7 +121,9 @@ void setup() {
 
   if (now < compiled) {
     Rtc.SetDateTime(compiled);
-  } else if (now > compiled) {} else if (now == compiled) {}
+  } else if (now > compiled) {
+  } else if (now == compiled) {
+  }
 
   Rtc.Enable32kHzPin(false);
   Rtc.SetSquareWavePin(DS3231SquareWavePin_ModeNone);
@@ -398,16 +404,30 @@ void inithttp() {
 
 		char params[128];
 		snprintf(params, sizeof params, "%s%d", "uId=2&h=3&fw=4&timestamp=5&mId=", midconf);
-		httpResponseCode = http.POST(params);
-
-		if (httpResponseCode > 0) {
+		statusCode = http.POST(params);
+    
+    response = http.getString();
+    
+		/*if (statusCode > 0) {
 			response = http.getString();
+      Serial.println(response);
 			http.end();
-		}
+		}*/
+    http.end();
 	}
 }
 
 int success_json;
+
+void refreshDTime() {
+  while (!Serial) continue;
+
+  DynamicJsonDocument doc(600);
+  deserializeJson(doc, response);
+
+  dTime = doc["dTime"];
+  success_json = doc["success"];
+}
 
 void initjson() {  
 	while (!Serial) continue;
@@ -435,7 +455,7 @@ void initdTime() {
     sprintf(ftime, "End= %02d:%02d %02d/%02d", hour(dTime), minute(dTime), month(dTime), day(dTime));
     lcd.print(ftime);  
   } else {
-    lcd.print("No Workorder");
+    lcd.print("No Workorder    ");
   }
 }
 
@@ -457,22 +477,67 @@ void initstartTime() {
 void loop() {
   sec_elapsed++;
 
-  if (sec_elapsed > 29) {
+  Serial.print("sec_elapsed: ");
+  Serial.print(sec_elapsed);
+  Serial.println();
+
+  int dTimeLoc = 0;
+  
+  if (sec_elapsed > 5) {
     sec_elapsed = 0;
 
+    //  query
     inithttp();
 
-    if (!response.length() == 0) {
-      initjson();
+    //  if there is a response
+    if (response.length() > 0) {
 
-      if (success_json != 1) {
+      //  ********
+      //  parse json. get new dTime, startTime, success_json
+      DynamicJsonDocument doc(600);
+      deserializeJson(doc, response);    
+      dTimeLoc = doc["dTime"];
+      success_json = doc["success"];
+      //  ********
+
+      //  if there is no work order
+      if (success_json < 1) {
+
+          if (noWorkPassed > 5) {
+            dTime = 0;
+            startTime = 0;
+            noWorkPassed = 0;
+            initdTime();
+          } else {
+            noWorkPassed++;
+          }
+      
+      } else {  //  if there is work order, refresh dTime
+
+          //  if dTime is new, refresh it
+          if (dTime != dTimeLoc) {
+            dTime = dTimeLoc;
+            
+            initval();
+            initdTime();
+            initstartTime();
+          }
+      }
+      
+    } else {  //  empty response
+
+      Serial.println("empty response");
+      
+      if (noWorkPassed > 5) {
         dTime = 0;
         startTime = 0;
+        noWorkPassed = 0;
+        
+        lcd.setCursor(0, 1);
+        lcd.print("Server/WiFi is Off");
+      } else {
+        noWorkPassed++;
       }
-
-      initval();
-      initdTime();
-      initstartTime();
     }
   }
 
@@ -487,7 +552,7 @@ void loop() {
     force_update_status = timeClient.forceUpdate();
     update_status = timeClient.update();
   }
-  
+
 	lcd.setCursor(0, 0);
 	lcd.print("Now= ");
 	lcd.print(timeClient.getFormattedTime());
