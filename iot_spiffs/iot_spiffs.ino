@@ -20,8 +20,8 @@
 #include <FS.h>
 
 //  enter host.local in browser
-const char* host = "zanrosso1000292";
-const char* hostName = "zanrosso1000292";
+const char* host = "stefor100035";
+const char* hostName = "stefor100035";
 
 int sec_elapsed = 0;
 int noWorkPassed = 0;
@@ -33,6 +33,7 @@ char MM = 00;
 char hours, minutes, seconds;
 long dTime;
 long startTime;
+long startTime2;
 long val0;
 long val1;
 long val2;
@@ -76,11 +77,20 @@ void setup() {
   pinMode(D6, OUTPUT);
   
   Serial.begin(115200);
+
+  lcd.init();
+  lcd.backlight();
   
   if (!SPIFFS.begin()) {
-    Serial.println("SPIFFS Mount failed");  
+    lcd.setCursor(0, 0);
+    lcd.print("SPIFFS Mount");
+    lcd.setCursor(0, 1);
+    lcd.print("Failed");
   } else {
-    Serial.println("SPIFFS Mount successful");
+    lcd.setCursor(0, 0);
+    lcd.print("SPIFFS Mount");
+    lcd.setCursor(0, 1);
+    lcd.print("Successful");
     readConfig();
   }
   
@@ -99,11 +109,7 @@ void setup() {
 
   timeClient.begin();
   timeClient.update();
-  //Serial.println("timeClient:");
-  //Serial.println(timeClient.getEpochTime());
-  
-  lcd.init();
-  lcd.backlight();
+  startTime2 = timeClient.getEpochTime();
   
   Rtc.Begin();
 
@@ -407,27 +413,11 @@ void inithttp() {
 		statusCode = http.POST(params);
     
     response = http.getString();
-    
-		/*if (statusCode > 0) {
-			response = http.getString();
-      Serial.println(response);
-			http.end();
-		}*/
     http.end();
 	}
 }
 
 int success_json;
-
-void refreshDTime() {
-  while (!Serial) continue;
-
-  DynamicJsonDocument doc(600);
-  deserializeJson(doc, response);
-
-  dTime = doc["dTime"];
-  success_json = doc["success"];
-}
 
 void initjson() {  
 	while (!Serial) continue;
@@ -437,6 +427,7 @@ void initjson() {
 
   dTime = doc["dTime"];
   startTime = doc["startTime"];
+  startTime2 = doc["startTime"];
   success_json = doc["success"];
 }
 
@@ -475,15 +466,13 @@ void initstartTime() {
 }
 
 void loop() {
+  long currEpochTime = timeClient.getEpochTime();
+  
   sec_elapsed++;
-
-  Serial.print("sec_elapsed: ");
-  Serial.print(sec_elapsed);
-  Serial.println();
 
   int dTimeLoc = 0;
   
-  if (sec_elapsed > 5) {
+  if (sec_elapsed > 30) {
     sec_elapsed = 0;
 
     //  query
@@ -502,41 +491,44 @@ void loop() {
 
       //  if there is no work order
       if (success_json < 1) {
-
-          if (noWorkPassed > 5) {
-            dTime = 0;
-            startTime = 0;
-            noWorkPassed = 0;
-            initdTime();
+        
+          Serial.println(response);
+          
+          if (noWorkPassed > 10) {
+              dTime = 0;
+              startTime = 0;
+              noWorkPassed = 0;
+              initdTime();
           } else {
-            noWorkPassed++;
+              noWorkPassed++;
+
+              lcd.setCursor(0, 1);
+              lcd.print("NoWork Shut 5min");
           }
       
       } else {  //  if there is work order, refresh dTime
 
           //  if dTime is new, refresh it
           if (dTime != dTimeLoc) {
-            dTime = dTimeLoc;
-            
-            initval();
-            initdTime();
-            initstartTime();
+              dTime = dTimeLoc;              
+              initval();
+              
+              initstartTime();
           }
+          initdTime();
       }
       
     } else {  //  empty response
-
-      Serial.println("empty response");
       
-      if (noWorkPassed > 5) {
-        dTime = 0;
-        startTime = 0;
-        noWorkPassed = 0;
-        
-        lcd.setCursor(0, 1);
-        lcd.print("Server/WiFi is Off");
+      if (currEpochTime > dTime) {
+          dTime = 0;
+          startTime = 0;
+          
+          lcd.setCursor(0, 1);
+          lcd.print("Server/WiFi Off ");
       } else {
-        noWorkPassed++;
+          lcd.setCursor(0, 1);
+          lcd.print("Connection Lost ");
       }
     }
   }
@@ -613,6 +605,7 @@ void loop() {
 	}
 
   delay(1000);
+  startTime2++;
 }
 
 //https://www.teachmemicro.com/esp8266-spiffs-web-server-nodemcu/
