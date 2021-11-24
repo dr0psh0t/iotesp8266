@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>How to upload code and filesystem</title>
+    <meta name=viewport content="width=device-width, initial-scale=1, maximum-scale=1">
+</head>
+<body style="margin-left: 50px; margin-right: 50px">
+
+<h2>Uploading code and filesystem in esp8266</h2>
+<a href="#Upload">=> Upload code to esp8266</a><br>
+&emsp;<a href="#USBupload">a. USB upload.</a><br>
+&emsp;<a href="#web_updater_upload">b. Web updater upload.</a><br><br>
+
+<a href="#Filesystem">=> Upload files to esp8266</a><br>
+&emsp;<a href="#web_updater_upload">a. USB files upload.</a><br>
+&emsp;<a href="#web_updater_file_upload">b. Web updater files upload.</a><br><br>
+
+<h3><span id="Upload">1. Upload code to esp8266</span></h3>
+<div style="margin-left: 50px; margin-right: 50px">
+    <h4><span id="USBupload">a. USB upload</span></h4>
+    <div style="margin-left: 50px; margin-right: 50px">
+        <p>Plug USB from and to PC and ESP8266. A Serial
+            port will be available under Tools -> Port: if connected, in
+            my case, the Serial port named "COM3" in my PC. If you're
+            going to use other PC, the Serial port name might differ.
+            Check in device manager to verify the Serial port of ESP8266.</p>
+        <p>Then click the upload button.</p>
+        <img src="com3_1.png">
+        <p>If no errors in the program. Upload is successful.</p>
+        <img src="upload_con.png">
+
+    </div>
+    <h4><span id="web_updater_upload">a. Web updater upload</span></h4>
+    <div style="margin-left: 50px; margin-right: 50px">
+        <p>Each mcd has its own IP assigned. Check machines.xlxs file. Enter
+            IP address of the MCD you want to upload code to in the browser.
+            Click `browse` and navigate to, in my computer,
+            `C:\Users\wmdcprog\AppData\Local\Temp\arduino_build_579718`.</p>
+            <p>Take note: `wmdcprog` is the username of the PC. It will be different when
+            you use other PC to upload. The `arduino_build_579718` folder is not permanent
+            in this directory. It frequently changes its folder name every time you compile
+            your program. But it only changes the number appended of the folder name. For example,
+            `arduino_build_579718` folder was generated at the time of writing this guide.
+            When you compile the program again or you compile the next day, it will change
+            to `arduino_build_anynumber`.</p>
+        <p>There are 2 .bin files generated when compiling:</p>
+        <p>&emsp;`iot_spiffs.ino.bin` is a binary file we use to upload program to ESP8226.
+            It is the ESP8266 firmware itself.</p>
+        <p>&emsp;`iot_spiffs.spiffs.bin` is a binary file we use to upload filesystem to ESP8226.
+            This contains the files inside the `data` folder.</p>
+        <p>Select `iot_spiffs.ino.bin` and begin web upload:</p>
+        <img src="upload_page.png">
+        <p>Web upload on progress</p>
+        <img src="upload_progress.png">
+        <p>Web upload successful</p>
+        <img src="web_upload_success.png">
+        <P></P>
+    </div>
+</div>
+
+<h3><span id="Filesystem">2. Upload files to esp8266</span></h3>
+<div style="margin-left: 50px; margin-right: 50px">
+    <h4><span id="sketch_upload">a. USB files upload</span></h4>
+    <div style="margin-left: 50px; margin-right: 50px">
+        <p>Connect USB. Under `Tools` => click `ESP8266 Sketch Data Upload`</p>
+        <img src="sketch_upload.png">
+        <p>Sketch upload successful message:</p>
+        <img src="sketch_upload_success.png">
+    </div>
+
+    <h4><span id="web_updater_file_upload">b. Web updater files upload</span></h4>
+    <div style="margin-left: 50px; margin-right: 50px">
+        <p>Enter ip-address/update of the MCD you want to upload the filesystem to.
+            Under `FileSystem` -> `Choose File` select `iot_spiffs.spiffs.bin` </p>
+        <img src="web_updater_file_upload.png">
+        <p>Web update filesystem success message:</p>
+        <img src="web_upload_file_success.png">
+    </div>
+</div>
+
+</body>
+</html>

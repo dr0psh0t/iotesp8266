@@ -19,7 +19,6 @@
 #include "ArduinoJson.h"
 #include <FS.h>
 
-//  enter host.local in browser
 const char* host = "stefor100035";
 const char* hostName = "stefor100035";
 
@@ -50,7 +49,8 @@ int networkid1conf = 0;
 int networkid2conf = 0;
 int subnetconf = 0;
 int hostconf = 0;
-const char* ntpipconf = "";
+//const char* ntpipconf = "";
+String ntpipconf = "";
 String mcdapiendpointconf = "";
 int midconf = 0;
 String wificonf = "";
@@ -326,9 +326,10 @@ void readConfig() {
     gatewaydnshostconf = configs["gatewaydnshost"].as<int>();
     usernameconf = configs["username"].as<String>();
     userpassconf = configs["userpass"].as<String>();
-    ntpipconf = configs["ntpip"].as<String>().c_str();
+    ntpipconf = configs["ntpip"].as<String>();
 
-    NTPClient locntp(ntpUDP, "192.168.1.100", GMT_8);
+    //const char* ntpipchar = (char*) ntpipconf.c_str();
+    NTPClient locntp(ntpUDP, (char*) ntpipconf.c_str(), GMT_8);
     timeClient = locntp;
 
     WiFi.mode(WIFI_STA);
@@ -413,6 +414,7 @@ void inithttp() {
 		statusCode = http.POST(params);
     
     response = http.getString();
+    Serial.println(response);
     http.end();
 	}
 }

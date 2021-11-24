@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Troubleshoot</title>
+    <meta name=viewport content="width=device-width, initial-scale=1, maximum-scale=1">
+</head>
+<body style="margin-left: 50px; margin-right: 50px">
+
+<h3>Ways to troubleshoot MCD if not working:</h3>
+<a href="#Server">=> Check if the server and systems are up</a><br>
+<a href="#Workorder">=> Check if there is a valid work order</a><br>
+<a href="#Routers">=> Check if routers are running</a><br>
+<a href="#Pullout">=> Pull out MCD and troubleshoot in Design</a><br>
+
+<h4><span id="Server">1. Check if the server and systems are up</span></h4>
+<div style="margin-left: 50px; margin-right: 50px">
+
+    <p>MCDs sends HTTP request every 30 seconds. Therefore the joborder system
+    must be running at all times at work hours. All company's web applications
+    are hosted at server IP of 192.168.1.150<p>
+
+    <p>First, ping the server. If packets were sent and received at 100%, the
+    server machine is turned on and wired to the network. If the ping has no
+    or unstable response, the server might be going under maintenance.</p>
+
+    <img src="ping.png"><br>
+
+    <p>Check the /joborder/ system if its responsive. Type `192.168.1.150:8080/joborder`
+        into the browser. Login with username: `rjordan` and password: `jordan123`.</p>
+
+    <p>If the grids of the job order or work order are slowly loading the list,
+        the system is not responsive and should be refreshed or restarted if it does
+        not return to normal.</p>
+    <img src="job_load.png" height="400" width="800">
+
+    <p>A responsive grids.</p>
+    <img src="jo_nolaod.png" height="400" width="800">
+
+
+</div>
+
+<h4><span id="Workorder">2. Check if there is a valid work order</span></h4>
+<div style="margin-left: 50px; margin-right: 50px">
+
+    See if there is a work order running on that machine. Get the MCD Id of the<br>
+    machine from machines.xlsx file. Take for example 10007:
+    <br><br>
+
+    <img src="machines.png">
+    <br><br>
+
+    Open Postman and query test to see if there is work order running:<br><br>
+    Method: POST<br>
+    URL: http://192.168.1.150:8080/joborder/IoTWorkInfo<br>
+    Parameters:<br>
+    &emsp;mId: 10007<br>
+    &emsp;timestamp: 1631887744<br>
+    &emsp;a: t8WooU5D1anfJhdoK4LjhRGT5XD2sbp28M1s72K9vizot9NmGn80s6nNsmsYoiJ<br>
+    &emsp;h: f7bc83f430538424b13298e6aa6fb143ef4d59a14946175997479dbc2d1a3cd8<br><br>
+    <img src="postman.png">
+    <br>
+    <img src="lcd.png">
+    <br><br>
+    “No work in Queue, or already completed” means no work order and machine will<br>
+    not run since no electric supply from MCD.<br><br>
+
+    Test query another machine, 100071 for example:<br><br>
+    <img src="succ.png">
+    <br><br>
+    Go to epochconverter.com and paste epoch time (dTime) to see the readable date.<br>
+    sTime (start time): 1636706922 = Monday, November 15, 2021 12:54:37 AM<br>
+    dTime (deadline time): 1637158722 = Wednesday, November 17, 2021 2:18:42 PM<br><br>
+    <img src="epoch.png"><br>
+    <img src="lcd_succ.png"><br><br>
+
+    Work order starts at 11-15-2021 12:54:37 AM and ends at 11-17-2021 2:18:42 PM. <br>
+    The message tells us that there is work order and the machine should run.<br>
+
+</div>
+
+<h4><span id="Routers">3. See if RT-N12+ routers are running</span></h4>
+<div style="margin-left: 50px; margin-right: 50px">
+    <p>There are 3 routers in north, 1 in central and 1 in south plant. These routers
+        serves as an access point so that MCDs can access the job order system. MCDs
+        located in ER connect to ER router, MCDs located in MF connect to MF router,
+        MCDs located in Finance connect to Finance router. No router means no MCD working.
+        They must be running at all times at work hours. Make sure to tighten the Ethernet
+        cable from and to its Ethernet port. </p>
+    <p>ER router has an IP of 192.168.1.34. Enter the IP in the browser. If the router’s
+        web page renders when typing its IP, the router is ok and running.</p>
+    username: admin<br>
+    password: WmdcPassword5432<br>
+    <img src="er.png"><br>
+    <p>MF router has an IP of 192.168.1.3. Enter the IP in the browser. If the router’s
+        web page renders when typing its IP, the router is ok and running.</p>
+    <img src="mf.png"><br>
+    <p>Finance router has an IP of 192.168.1.32. Enter the IP in the browser. If the
+        router’s web page renders when typing its IP, the router is ok and running.</p>
+    username: admin<br>
+    password: WmdcPassword5432<br>
+    <img src="finance.png"><br>
+
+</div>
+
+<h4><span id="Pullout">4. Pull out MCD and troubleshoot in Design</span></h4>
+<div style="margin-left: 50px; margin-right: 50px">
+    <p>If none of the above works, the last step is to eject MCD from the machine,
+        bring it to design and troubleshoot</p>
+</div>
+
+
+</body>
+</html>

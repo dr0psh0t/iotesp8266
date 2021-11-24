@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Source Code</title>
+    <meta name=viewport content="width=device-width, initial-scale=1, maximum-scale=1">
+</head>
+<body style="margin-left: 50px; margin-right: 50px">
+
+<div style="margin-left: 50px; margin-right: 50px">
+    <h2>Source Code</h2>
+    <img src="iot_spiffs.png">
+    <img src="data.png">
+    <p>The `iot_spiffs.ino` file is the source code. Inside the `data` folder are the web
+    and configuration files. The files in the `data` folder are stored in the ESP8226 when
+    uploading the filesystem. Its called
+    <a href="https://www.teachmemicro.com/esp8266-spiffs-web-server-nodemcu/">SPIFFS.</a>
+    The ESP8266 will read those files at initialization.
+    </p>
+
+    <h3>configs.json</h3>
+    <p>When ESP8266 is turned on, initialization takes place and reads
+        the content of configs.json at setup() method.</p>
+    <img src="readConfig.png"><br>
+    <img src="configs_json.png">
+    <p>`networkid1`, `networkid2`, `subnet` and `host` is the IP address of the MCD.
+    At line 337 in iot_spiffs.ino, those values get assigned at start up. When combined,
+    it becomes `192.168.1.51`</p>
+    <img src="mcd_ip.png">
+    <p>`ntpip` is the IP of the NTP server (192.168.1.100) where it hosted to.
+        NTP is very important since it is used to acquire the current timestamp to be
+        checked against dTime to determine whether the work order is on going or finished.</p>
+    <img src="ntp_ip.png">
+    <p>`username` and `userpass` is the credential of the MCD we use to logon to authform.html</p>
+    <p>`mcdapiendpoint` is the API for retrieving the work order status</p>
+    <p>`mId` is the MCD Id of the machine. See machines.xlxs</p>
+    <p>`gatewaydnshost` is the host of the default gateway and dns. If 192.168.1.100 is our
+    DNS and Gateway, 100 is the host.</p>
+
+    <h3>authform.html</h3>
+    <img src="auth_page.png">
+
+    <h3>configform.html</h3>
+    <p>This is the configuration form. It updates the configs.json file.
+        You cannot directly access this configuration page when not logged in.</p>
+    <img src="conf_page.png">
+</div>
+
+</body>
+</html>
