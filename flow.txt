@@ -1,8 +1,0 @@
-Logic Flow
-----------------
-1) Get work order authorization
-2) Start Work
-3) If wifi is disabled or no server communication ---- Continue until time runs out
-4) Continue checking when wifi is back and / or server responds and update if there are any changes
------
-Main objective here is safety first, not to abrubtly stop the work and damage the item

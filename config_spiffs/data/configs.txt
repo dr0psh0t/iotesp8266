@@ -1,1 +1,0 @@
-{"ip": "192.168.1.199", "mId": 10007, "wifi": "wifi", "password": "password", "subnet": 1, "host": 199}
