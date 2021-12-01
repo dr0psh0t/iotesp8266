@@ -504,7 +504,7 @@ void loop() {
           noWorkPassed++;
 
           lcd.setCursor(0, 1);
-          lcd.print("NoWork Shut 5min");
+          lcd.print("No Workorder #2");
         }
 
       } else {  //  if there is work order, refresh dTime
